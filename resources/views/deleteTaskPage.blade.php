@@ -37,6 +37,7 @@
             <li><strong>Tools Used:</strong> {{ $task->tools_used }}</li>
             <li><strong>Category:</strong> {{ $task->category }}</li>
             <li><strong>Due Date:</strong> {{ $task->due_date }}</li>
+            <li><strong>Status</strong> {{ $task->status }}</li>
         </ul>
         <form action="/deleteTask/{{ $task->id }}" method="POST">
             @csrf

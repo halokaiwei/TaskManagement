@@ -1,16 +1,21 @@
-<!-- adminApprovalPage.blade.php -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drop Approval</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <title>Document</title>
     <style>
         body {
             background-color: #f8f9fa;
             font-family: "Roboto", sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .table th,
+        .table td {
+            vertical-align: middle;
         }
         .navbar {
             background-color: #28a745;
@@ -21,14 +26,7 @@
         .navbar-nav .nav-link {
             color: #fff;
         }
-        .container {
-            margin-top: 50px;
-        }
-        .table th,
-        .table td {
-            vertical-align: middle;
-        }
-        </style>
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark">
@@ -38,15 +36,14 @@
                 </button>
                 <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
+                    @can('isAdmin')
                     <li class="nav-item">
                         <a class="nav-link" href="/createTaskPage">Create Task</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/adminApprovalPage">Admin Approval</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dropApprovalPage">Drop Approval</a>
-                    </li>
+                    @endcan
                     <li class="nav-item">
                         <a class="nav-link" href="/viewTasksPage">View Tasks</a>
                     </li>
@@ -60,34 +57,38 @@
               </div>
           </div>
      </nav>
+
     <div class="container">
-        <h1>Admin Approval Page</h1>
-        @if ($users->count() > 0)
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($users as $user)
-                        <tr>
-                            <td>{{ $user->name }}</td>
-                            <td>{{ $user->email }}</td>
-                            <td>
-                                <a href="/adminApprovedConfirmationPage/{{ $user->id }}" class="btn btn-success">Approve</a>
-                                <a href="/adminRejectedConfirmationPage/{{ $user->id }}" class="btn btn-secondary">Rejected</a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <h2>Drop Approval</h2>
+        @if ($dropRequests->count() > 0)
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>User</th>
+                    <th>Requested At</th>
+                    <th>Action</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($dropRequests as $request)
+                <tr>
+                    <td>{{ $request->task->title }}</td>
+                    <td>{{ $request->user->name }}</td>
+                    <td>{{ $request->created_at }}</td>
+                    <td>{{ $request->status }}</td>
+                    <td>
+                        <a href="/dropApprovedConfirmationPage/{{ $request->id }}" class="btn btn-success"> Approve </a>
+                        <a href="/dropRejectedConfirmationPage/{{ $request->id }}" class="btn btn-success"> Reject </a>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
         @else
-            <p>No admin users awaiting approval.</p>
+        <p>No drop requests awaiting approval.</p>
         @endif
     </div>
 </body>
 </html>
-

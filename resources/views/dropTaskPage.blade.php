@@ -37,13 +37,10 @@
             <li><strong>Tools Used:</strong> {{ $task->tools_used }}</li>
             <li><strong>Category:</strong> {{ $task->category }}</li>
             <li><strong>Due Date:</strong> {{ $task->due_date }}</li>
+            <li><strong>Status</strong> {{ $task->status }}</li>
         </ul>
-        <form action="/dropTask/{{ $task->id }}" method="POST">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-danger">Drop</button>
-            <a href="/myProfilePage" class="btn btn-secondary">Cancel</a>
-        </form>
+        <a href="/dropTask/{{ $task->id }}" class="btn btn-danger">Drop</a>
+        <a href="/myProfilePage" class="btn btn-secondary">Cancel</a>
     </div>
 </body>
 </html>

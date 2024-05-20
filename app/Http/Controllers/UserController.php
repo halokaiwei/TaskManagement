@@ -19,12 +19,9 @@ class UserController extends Controller
 
             if (Auth::attempt($credentials)) {
                 $user = Auth::user();
-                session(['user' => $user]); // Store user data in session
                 return redirect('/viewTasksPage');
             }
             else {
-                //Session::flash('error', 'LogIn Failed!! Wrong Email / Password!');
-                //dd(session('error')); // Add this line to check if the error message is stored in the session
                 $errorMessage = 'LogIn Failed!! Wrong Email / Password!';
                 return view('userLoginPage')->with('errorMessage', $errorMessage);
             }
@@ -51,12 +48,10 @@ class UserController extends Controller
         $user->save();
 
         if ($request->input('select_role') === 'admin') {
-            // Mark the user as pending approval
             $user->update(['is_approved' => false]);
-            $request->session()->put('registered_user', $user);
-            // Redirect to a page indicating that the registration is successful
             return redirect('/registrationsuccessPage')->with('success', 'Registration successful. Your account is pending approval.');
         } else {
+            $user->update(['is_approved' => true]);
             return redirect('/userLoginPage')->with('success', 'User registered successfully!');
         }
     }
@@ -64,6 +59,32 @@ class UserController extends Controller
     public function adminApprovalPage() {
         $users = User::where('role', 'admin')->where('is_approved', false)->get();
         return view('adminApprovalPage', compact('users'));
+    }
+
+    public function adminApprovedConfirmationPage($id) {
+        $user = User::findOrFail($id);
+        return view('adminApprovedConfirmationPage',compact('user'));
+    }
+
+    public function adminRejectedConfirmationPage($id) {
+        $user = User::findOrFail($id);
+        return view('adminRejectedConfirmationPage',compact('user'));
+    }
+
+    public function adminApproved($id) {
+        $user = User::findOrFail($id);
+        $user->role = 'admin';
+        $user->is_approved = true;
+        $user->save();
+        return redirect('/adminApprovalPage');
+    }
+
+    public function adminRejected($id) {
+        $user = User::findOrFail($id);
+        $user->role = 'user';
+        $user->is_approved = false;
+        $user->save();
+        return redirect('/adminApprovalPage');
     }
 
     public function myProfilePage() {

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\DropRequest;
 use App\Models\Task;
+use Illuminate\Support\Facades\Validator;
+
 
 class TaskController extends Controller
 {
@@ -60,7 +63,7 @@ public function modifyTaskPage($id) {
     if (!$task) {
         return 'Task not found!';
     }
-    return view('modifyTaskPage',compact('task'));
+    return redirect('/modifyTaskPage',compact('task'));
 }
 
 public function deleteTaskPage($id) {
@@ -68,7 +71,7 @@ public function deleteTaskPage($id) {
     if (!$task) {
         return 'Task not found!';
     }
-    return view('deleteTaskPage',compact('task'));
+    return redirect('/deleteTaskPage',compact('task'));
 }
 
 public function deleteTask($id) {
@@ -85,7 +88,7 @@ public function pickUpTaskPage($id) {
     if (!$task) {
         return 'Task not found!';
     }
-    return view('/pickUpTaskPage',compact('task'));
+    return redirect('/pickUpTaskPage',compact('task'));
 }
 
 public function pickUpTask($id) {
@@ -95,6 +98,7 @@ public function pickUpTask($id) {
     }
     $user = auth()->user();
     $task->picked_up_by = $user->id;
+    $task->status = 'Ongoing';
     $task->save();
     return redirect('/myProfilePage')->with('success', 'Task picked up successfully!');
 }
@@ -112,15 +116,62 @@ public function dropTask($id) {
     if (!$task) {
         return 'Task not found!';
     }
+    $task->status = 'Drop Pending';
+    $task->save();
     $user = auth()->user();
     if ($task->picked_up_by !== $user->id) {
         return 'You are not authorized to drop this task!';
     }
-    
-    // Reset the picked_up_by field to null
+    DropRequest::create([
+        'task_id' => $task->id,
+        'user_id' => $user->id,
+        'status' => 'Pending',
+    ]);
+    return view('/dropTaskConfirmationPage');
+}
+
+public function dropApproved($id) {
+    $dropRequest = DropRequest::findOrFail($id);
+    $task= Task::findOrFail($dropRequest->task_id);
     $task->picked_up_by = null;
+    $task->status = 'Drop Approved';
     $task->save();
 
-    return redirect('/myProfilePage')->with('success', 'Task dropped successfully!');
+    $dropRequest->status = 'Success';
+    $dropRequest->save();
+    return redirect('/myProfilePage');
+}
+
+public function dropRejected($id) {
+    $task->status = 'Drop Rejected';
+    $task->save();
+    $dropRequest = DropRequest::findOrFail($id);
+    $dropRequest->status = 'Rejected';
+    $dropRequest->save();
+    return view('dropApprovalPage');
+}
+
+public function dropApprovedConfirmationPage($id) {
+    $dropRequest = DropRequest::findOrFail($id);
+    return view('/dropApprovedConfirmationPage',compact('dropRequest'));
+}
+
+public function dropRejectedConfirmationPage($id) {
+    $dropRequest = DropRequest::findOrFail($id);
+    return view('dropRejectedConfirmationPage',compact('dropRequest'));
+}
+
+public function dropApprovalPage() {
+    $dropRequests = DropRequest::where('status', 'Pending')->get();
+    return view('dropApprovalPage', compact('dropRequests'));
+}
+
+public function submitProgressPage($id) {
+    $task = Task::findOrFail($id);
+    return redirect('submitProgressPage', compact('task'));
+}
+
+public function submitTaskProgress(Request $request, $id) {
+
 }
 }

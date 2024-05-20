@@ -21,14 +21,17 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
-                    @if(auth()->user() && auth()->user()->role === 'admin')
+                    @can('isAdmin')
                     <li class="nav-item">
                         <a class="nav-link" href="/createTaskPage">Create Task</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/adminApprovalPage">Admin Approval</a>
                     </li>
-                    @endif
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dropApprovalPage">Drop Approval</a>
+                    </li>
+                    @endcan
                     <li class="nav-item">
                         <a class="nav-link" href="/myProfilePage">My Profile</a>
                     </li>
@@ -51,6 +54,7 @@
                     <th>Category</th>
                     <th>Due Date</th>
                     <th>Posted By</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -63,17 +67,22 @@
                         <td>{{ $task->category }}</td>
                         <td>{{ $task->due_date }}</td>
                         <td>{{ $task->postedBy->name }}</td>
-                        @if(auth()->user() && auth()->user()->role === 'user')
+                        @if ($task->status === 'Drop Approved')
+                        <td>Pending</td>
+                        @else
+                        <td>{{ $task->status }}</td>
+                        @endif
+                        @can('isUser')
                         <td>
                              <a href="/pickUpTaskPage/{{ $task->id }}" class="btn btn-primary btn-sm">Pick Up Task</a>
                         </td>
-                        @endif
-                        @if(auth()->user() && auth()->user()->id === $task->posted_by)
+                        @endcan
+                        @can('view',$task)
                         <td>
                             <a href="/modifyTask/{{ $task->id }}" class="btn btn-primary btn-sm">Modify</a>
                             <a href="/deleteTask/{{ $task->id }}" class="btn btn-danger btn-sm">Delete</a>
                         </td>
-                        @endif
+                        @endcan
                     </tr>
                 @endforeach
             </tbody>

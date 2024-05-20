@@ -25,6 +25,7 @@ class CreateTasksTable extends Migration
             $table->dateTime('due_date');    
             $table->foreignId('posted_by')->constrained('users'); // Reference to the admin who posted the task
             $table->foreignId('picked_up_by')->nullable()->constrained('users'); // Reference to the user who picked up the task
+            $table->enum('status',['Pending','Ongoing','Drop Pending','Drop Approved','Drop Rejected'])->default('Pending');
             $table->timestamps();
         });
     }
